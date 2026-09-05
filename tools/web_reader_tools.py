@@ -44,12 +44,6 @@ def execute_read_web_page(url: str) -> str:
     """
     Fetch raw HTML from a URL, clean irrelevant elements (scripts/styles),
     and extract formatted plain text up to MAX_TEXT_LENGTH characters.
-
-    Args:
-        url (str): Target webpage URL to fetch.
-
-    Returns:
-        str: Extracted plain text or an informative error message.
     """
     if not url or not isinstance(url, str):
         logger.warning("Invalid or empty URL provided to read_web_page.")
@@ -59,17 +53,25 @@ def execute_read_web_page(url: str) -> str:
     if not (clean_url.startswith("http://") or clean_url.startswith("https://")):
         clean_url = f"https://{clean_url}"
 
+    # Header diperlengkap untuk melewati proteksi anti-bot dasar (Cloudflare/Fandom)
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        )
+            "Chrome/122.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
     }
 
     try:
         logger.info(f"Fetching URL content: {clean_url}")
-        response = requests.get(clean_url, headers=headers, timeout=DEFAULT_TIMEOUT)
+        # Tambahkan allow_redirects=True
+        response = requests.get(clean_url, headers=headers, timeout=DEFAULT_TIMEOUT, allow_redirects=True)
         response.raise_for_status()
 
         # Parse HTML and strip non-text elements
@@ -84,7 +86,6 @@ def execute_read_web_page(url: str) -> str:
         ]
 
         if not extracted_chunks:
-            # Fallback to general page text if no targeted paragraphs found
             raw_text = soup.get_text(separator=" ", strip=True)
             extracted_chunks = [raw_text] if raw_text else []
 
@@ -94,13 +95,21 @@ def execute_read_web_page(url: str) -> str:
             logger.warning(f"No readable text extracted from: {clean_url}")
             return f"Webpage at {clean_url} was fetched successfully, but no readable text content was found."
 
-        # Truncate text if it exceeds maximum allowable context window budget
         if len(full_text) > MAX_TEXT_LENGTH:
             full_text = full_text[:MAX_TEXT_LENGTH] + "\n\n[Content truncated due to length limits...]"
 
         logger.info(f"Successfully extracted {len(full_text)} characters from {clean_url}.")
         return f"Content from {clean_url}:\n\n{full_text}"
 
+    except requests.exceptions.HTTPError as exc:
+        if exc.response.status_code == 403:
+            logger.error(f"Access forbidden (403/Anti-Bot) for {clean_url}")
+            return (
+                f"Error: Access to {clean_url} was blocked by the website's anti-bot/Cloudflare protection (403 Forbidden). "
+                "Try searching for information about this page using web_search instead."
+            )
+        logger.error(f"HTTP error for {clean_url}: {exc}")
+        return f"Error: Unable to fetch content from {clean_url} (HTTP {exc.response.status_code})."
     except requests.exceptions.Timeout:
         logger.error(f"Timeout occurred while attempting to reach {clean_url}")
         return f"Error: Request timed out while trying to reach {clean_url}."

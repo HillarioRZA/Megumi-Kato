@@ -24,6 +24,13 @@ from tools.system_tools import (
     execute_manage_application,
     execute_get_system_status,
 )
+from tools.inspection_tools import (
+    INSPECTION_TOOLS,
+    SCAN_WORKSPACE_SCHEMA,
+    LIST_RUNNING_APPLICATIONS_SCHEMA,
+    execute_scan_workspace,
+    execute_list_running_applications,
+)
 from tools.registry import ALL_TOOL_SCHEMAS, TOOL_HANDLER_MAP, MEMORY_DEPENDENT_TOOLS
 
 __all__ = [
@@ -49,6 +56,11 @@ __all__ = [
     "execute_manage_local_file",
     "execute_manage_application",
     "execute_get_system_status",
+    "INSPECTION_TOOLS",
+    "SCAN_WORKSPACE_SCHEMA",
+    "LIST_RUNNING_APPLICATIONS_SCHEMA",
+    "execute_scan_workspace",
+    "execute_list_running_applications",
     "ALL_TOOL_SCHEMAS",
     "TOOL_HANDLER_MAP",
     "MEMORY_DEPENDENT_TOOLS",

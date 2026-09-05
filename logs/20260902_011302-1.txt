@@ -1,0 +1,40 @@
+======================================================================
+PROJECT ANIMA — TERMINAL TEST & SESSION LOG
+Percobaan Ke : #1
+Waktu Mulai  : 2026-09-02 01:13:02
+File Log     : 20260902_011302-1.txt
+======================================================================
+
+2026-09-02 01:13:02 [INFO] anima.main: Starting Project Anima — Phase 2 (Percobaan #1, Log: 20260902_011302-1.txt)
+2026-09-02 01:13:02 [INFO] anima.llm_client: Initialized OllamaClient [Base URL: http://localhost:11434, Model: qwen3.5:4b, Timeout: 300.0s]
+2026-09-02 01:13:02 [INFO] anima.personality: Successfully loaded personality YAML configuration files.
+2026-09-02 01:13:02 [INFO] anima.orchestrator: Initialized Orchestrator with dependency injection.
+2026-09-02 01:13:04 [INFO] httpx: HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-09-02 01:13:11 [INFO] anima.orchestrator: Processing message [Input length: 21]
+2026-09-02 01:13:11 [INFO] anima.llm_client: Sending chat request to Ollama [Model: qwen3.5:4b, Num Predict: 2000, Messages: 8]
+2026-09-02 01:13:26 [INFO] httpx: HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-09-02 01:13:26 [INFO] anima.llm_client: Successfully received chat response from Ollama. [Generated Tokens: 24]
+2026-09-02 01:13:26 [INFO] anima.orchestrator: Message processed successfully. Conversation history updated (Total messages: 2).
+
+[TURN 1] [01:13:26]
+Anda   > hai megumi apa kabar?
+Megumi > Hai, Kabar baik cuma kalau kamu nggak kelaperan atau butuh aku bantu cari sesuatu. Ada yang mau dibahas?
+--------------------------------------------------
+2026-09-02 01:14:07 [INFO] anima.orchestrator: Processing message [Input length: 18]
+2026-09-02 01:14:07 [INFO] anima.llm_client: Sending chat request to Ollama [Model: qwen3.5:4b, Num Predict: 2000, Messages: 10]
+2026-09-02 01:14:12 [INFO] httpx: HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-09-02 01:14:12 [INFO] anima.llm_client: Successfully received chat response from Ollama. [Generated Tokens: 26]
+2026-09-02 01:14:12 [INFO] anima.orchestrator: Message processed successfully. Conversation history updated (Total messages: 4).
+
+[TURN 2] [01:14:12]
+Anda   > lagi ngapain kamu?
+Megumi > Santai aja, duduk sebentar. Kamu lagi ada rencana buat hari ini? Atau cuma nungguin aku muncul kayak gitu?
+--------------------------------------------------
+
+======================================================================
+SESSION SUMMARY
+Status           : Session Ended Normally
+Waktu Selesai    : 2026-09-02 01:14:34
+Durasi Sesi      : 0:01:31
+Total Interaksi  : 2 turn
+======================================================================

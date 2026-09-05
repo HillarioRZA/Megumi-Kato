@@ -34,8 +34,8 @@ Currently on **Fase 5** (Tools Tier 2). See `/docs/ROADMAP.md` for full progress
 | 2B — Kualitas Kode & Logging | ✅ Selesai |
 | 3 — Memory System | ✅ Selesai |
 | 4 — Tools Tier 1 | ✅ Selesai |
-| 5 — Tools Tier 2 | 🔶 Berikutnya |
-| 6 — Mood System | 🔲 Belum |
+| 5 — Tools Tier 2 | ✅ Selesai |
+| 6 — Mood System | 🔶 Berikutnya |
 | 7 — Voice Output | 🔲 Belum |
 | 8 — Personality Polish | 🔲 Belum |
 | 9 — Voice Input | 🔲 Belum |
@@ -83,11 +83,14 @@ Currently on **Fase 5** (Tools Tier 2). See `/docs/ROADMAP.md` for full progress
 
 ---
 
-## FASE 5 — Tools Tier 2 🔶 *Sedang dikerjakan*
+## FASE 5 — Tools Tier 2 (Desktop Agent) ✅
 
-- [ ] `get_weather`
-- [ ] `web_page_reader`
-- [ ] `system_info`
+- [x] `get_weather` — Pengecekan cuaca real-time lokasi spesifik via API publik wttr.in
+- [x] `web_page_reader` — Ekstraksi teks bersih dari URL spesifik (pelengkap `web_search`)
+- [x] `system_tools` — Desktop Management:
+  - [x] `manage_local_file`: CRUD file sandboxed di `D:\Megumi Kato` (.txt, .md, .pdf)
+  - [x] `manage_application`: Buka/tutup aplikasi desktop dengan proteksi blocklist
+  - [x] `get_system_status`: Read-only metrik hardware (CPU, RAM, Baterai)
 - [ ] **Setelah fase ini selesai: clear database** (sebelum Fase 6 mood system aktif, supaya mood_score mulai dari kondisi bersih)
 
 ## FASE 6 — Mood/Love Meter System

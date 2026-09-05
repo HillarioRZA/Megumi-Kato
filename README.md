@@ -35,6 +35,7 @@ Currently on **Fase 5** (Tools Tier 2). See `/docs/ROADMAP.md` for full progress
 | 3 — Memory System | ✅ Selesai |
 | 4 — Tools Tier 1 | ✅ Selesai |
 | 5 — Tools Tier 2 | ✅ Selesai |
+| 5.1 — Tools Tier 2 | ✅ Selesai |
 | 6 — Mood System | 🔶 Berikutnya |
 | 7 — Voice Output | 🔲 Belum |
 | 8 — Personality Polish | 🔲 Belum |
@@ -44,126 +45,82 @@ Currently on **Fase 5** (Tools Tier 2). See `/docs/ROADMAP.md` for full progress
 | 12 — Ekosistem Lanjutan | 🔲 Belum |
 
 ---
-
-## FASE 1 — Core Foundation ✅
-
+**FASE 1 — Core Foundation** ✅ *Selesai*
 - Core, config, orchestrator
-- Thinking mode hard-disabled total — bug closing-tag di varian thinking Qwen3.5:4b, model tidak pernah keluar dari blok `<think>`, menghabiskan seluruh token budget tanpa hasil
+- Thinking mode hard-disabled total (bug closing-tag qwen3.5:4b)
 
-## FASE 2 — Personality Dasar ✅
+**FASE 2 — Personality Dasar** ✅ *Selesai*
+- Base character Megumi (riset kanon: kind, non-confrontational, tsukkomi humor)
+- Few-shot turn-based, mix bahasa, anti-fabrikasi data
 
-- Base character Megumi — riset kanon: kind, non-confrontational, tsukkomi-style dry humor, bukan kritis/blak-blakan (koreksi dari draft awal yang overstated)
-- Few-shot disusun sebagai actual conversation turns (bukan text blob di system prompt) — signifikan memperbaiki reliability model kecil
-- Mix bahasa Indonesia/Inggris/code-switch, filler proporsional, anti-fabrikasi data
+**FASE 2B — Standar Kualitas Kode & Logging** ✅ *Selesai*
 
-## FASE 2B — Standar Kualitas Kode & Logging ✅
+**FASE 3 — Memory System** ✅ *Selesai*
+- SQLite WAL (`memories`, `activity_log`, `chat_history`) + sliding window
+- Keyword extraction, category enum, `reset_all()`
 
-- Audit SRP, modularitas, type hints, error handling
-- Automated logging `.txt` per sesi
+**FASE 4 — Tools Tier 1** ✅ *Selesai*
+- `time_tools.py`, `web_search_tools.py`, tool-calling loop native, `ChatResponse`
+- **Bug #1 RESOLVED**: `get_current_time` → `TimeCache` ambient + `verify_exact_system_clock` on-demand
+- **Bug #2 RESOLVED**: anti-fabrikasi bertahan di bawah tekanan multi-turn
+- `save_memory`/`recall_memory` tervalidasi aktif dari obrolan natural
+- **Batasan diketahui**: `recall_memory` gagal lintas bahasa (`"belajar"` ≠ `"learning"`) — ditunda ke embedding search (Parking Lot)
 
-## FASE 3 — Memory System ✅
+**FASE 5 — Tools Tier 2 (Desktop Agent)** ✅ *Selesai*
+- `get_weather` (wttr.in), `read_web_page` (BeautifulSoup, fallback otomatis ke `web_search` saat 403 Cloudflare — **emergent behavior**, bukan hard-coded)
+- `manage_local_file` (CRUD sandboxed di `D:\Megumi Kato`, whitelist `.txt/.md/.pdf`), `manage_application` (buka/tutup app + blocklist proses kritis), `get_system_status`
+- 29/29 unit test passed
+- Bug ditemukan & fix: penolakan buat PDF, halusinasi update file tanpa tool call, halusinasi tutup aplikasi, multi-file delete gagal parse
 
-- `deque(maxlen=55)` short-term + SQLite WAL: `memories`, `activity_log`, `chat_history`
-- Fix kritis: keyword extraction (sebelumnya auto-inject memory nyaris tidak pernah match karena search pakai kalimat mentah utuh)
-- Multi-keyword OR search, category enum, `reset_all()`, SQL wildcard sanitization
+**FASE 5.1 — Inspection Tools & Context Anchoring Fix** ✅ *Selesai*
+- `scan_workspace`, `list_running_applications` (support multi-filter koma) — 34/34 unit test passed
+- **Bug ditemukan**: Context Anchoring Bias — model menolak verifikasi ulang status file/app kalau jawaban serupa sudah ada di `chat_history`, bahkan di sesi baru sekalipun (dibuktikan lewat perbandingan Log 1 vs Log 2: pertanyaan identik, satu-satunya variabel beda adalah keberadaan history lama)
+- **Fix awal (skema tool + banyak `hard_rules`)**: berhasil sebagian — solid di 1 sesi berkelanjutan, tapi bias tetap muncul di transisi antar-sesi dengan history lama
+- **Root cause**: instruksi deklaratif kalah kuat lawan pattern-matching "saya sudah pernah jawab ini" yang terlihat langsung di history — bukan soal kurang tegas instruksinya
+- **Fix final**: konsolidasi 8 `hard_rules` redundan (soal file/app) jadi 2 baris padat + tambahan eksplisit *"even if already answered earlier, always re-verify with a fresh tool call"* — menyasar akar masalah, bukan menambah pengulangan
+- **Temuan sampingan**: karakter sempat "keluar personality" pakai kata ganti "gue" (seharusnya "aku") — sudah di-fix di `speaking_style`
+- **Optimasi tambahan**: `base_character.yaml` dirampingkan dari 15 → 8 `hard_rules` unik (redundansi dihapus, bukan cuma ditumpuk terus)
+- ⏳ **Perlu re-test**: skenario Log 1/Log 2 diulang dengan `base_character.yaml` versi baru, tanpa `/clear` manual, untuk konfirmasi fix final bekerja
 
-**Batasan diketahui:** keyword search tidak menangkap hubungan semantik dalam 1 bahasa (`"pemrograman"` ≠ `"python"`).
+**FASE 6 — Mood/Love Meter System** ← *Berikutnya*
+- State-tracking (bukan RL), independent opinion trait
+- **→ Database di-clear sebelum fase ini dimulai** (sesuai rencana sejak awal)
 
-## FASE 4 — Tools Tier 1 ✅
+**FASE 7 — Voice Output** (text-in → voice-out)
+- GPT-SoVITS, voice mode = selalu full English (keputusan desain — mismatch budaya komunikasi personality Megumi kalau berbahasa Indonesia)
 
-- `time_tools.py`, `web_search_tools.py`, `registry.py`, `tool_dispatcher.py`, `llm_client.py` (`ChatResponse` dataclass), `orchestrator.py` (native tool-calling loop, `MAX_TOOL_ITERATIONS=3`)
-- `save_memory` otomatis dari obrolan natural — tervalidasi konsisten
-- **Bug #1 RESOLVED**: `get_current_time` diarsitektur ulang jadi `TimeCache` (ambient context, refresh 30 menit) + tool `verify_exact_system_clock` (dipanggil eksplisit untuk presisi). Menghilangkan celah round-trip yang bikin waktu "hilang" dari respons, sekaligus mempertahankan agency model untuk cek ulang kalau perlu.
-- **Bug #2 RESOLVED**: anti-fabrikasi bertahan meski user eksplisit "kasih izin nebak" — tervalidasi ulang di skenario yang sama persis dengan yang gagal sebelumnya
-- Response time: non-tool ~2-4 detik, tool-call 4-9 detik, cold start ~14-15 detik di awal sesi (perilaku Ollama normal)
+**FASE 8 — Deep Personality Polish**
+- Perbaiki kesalahan fakta umum (contoh: atribusi lagu salah)
+- Tuning konsistensi follow-up response
 
-**Temuan baru — keterbatasan bilingual recall:** `recall_memory` cuma reliable kalau query dan `content` tersimpan sama-sama Bahasa Inggris. Query Indonesia gagal match ke memory berbahasa Inggris (`"belajar"` ≠ `"learning"`), dan translate-on-the-fly tidak menyelesaikan akar masalah karena ambiguitas sinonim (`belajar` → `learn` atau `study`?). Diterima sebagai limitasi diketahui — solusi sesungguhnya (embedding-based search) ditunda ke Parking Lot, digabung dengan Knowledge Base RAG.
+**FASE 9 — Voice Input** (STT + VAD)
 
-**Catatan minor (non-blocking, untuk Fase 8):** sesekali respons kurang natural follow-up; 1 kesalahan fakta umum ditemukan (atribusi lagu salah). Belum tervalidasi: pertanyaan waktu versi Inggris murni, siklus refresh `TimeCache` di sesi >30 menit.
+**FASE 10 — Visual Character Live2D + Proactive Loop Dasar**
+- `see-through` + `Anime2.5DRig`, scheduler sederhana → `trigger_reason`
+- Interruption budget + quiet hours, journal proaktif, `OLLAMA_KEEP_ALIVE=-1`
 
----
+**FASE 11 — Native Android App**
+- Chibi/sprite → Live2D Android SDK, integrasi OPPO Band
 
-## FASE 5 — Tools Tier 2 (Desktop Agent) ✅
-
-- [x] `get_weather` — Pengecekan cuaca real-time lokasi spesifik via API publik wttr.in
-- [x] `web_page_reader` — Ekstraksi teks bersih dari URL spesifik (pelengkap `web_search`)
-- [x] `system_tools` — Desktop Management:
-  - [x] `manage_local_file`: CRUD file sandboxed di `D:\Megumi Kato` (.txt, .md, .pdf)
-  - [x] `manage_application`: Buka/tutup aplikasi desktop dengan proteksi blocklist
-  - [x] `get_system_status`: Read-only metrik hardware (CPU, RAM, Baterai)
-- [ ] **Setelah fase ini selesai: clear database** (sebelum Fase 6 mood system aktif, supaya mood_score mulai dari kondisi bersih)
-
-## FASE 6 — Mood/Love Meter System
-
-- State-tracking berbasis rule (bukan RL — sudah dipertimbangkan dan ditolak karena reward signal terlalu jarang/lambat untuk kasus ini)
-- Trait independent opinion (bukan yes-man)
-
-## FASE 7 — Voice Output (text-in → voice-out)
-
-- Engine: **GPT-SoVITS** (dipilih atas Chatterbox — cross-lingual English matang, fidelity lebih baik untuk sumber suara anime Jepang)
-- Voice sample Megumi diekstrak per kategori emosi (neutral/happy/sad/serious/surprised), dari klip per-kalimat (bukan full-length)
-- **Keputusan desain:** voice mode = selalu full English, apapun bahasa input user. Text chat tetap mirror bahasa user seperti biasa. Alasan: karakter Megumi berbahasa Indonesia terasa mismatch budaya komunikasi (gaya deadpan yang natural di Jepang bisa terbaca ketus/"jahat" dalam norma komunikasi Indonesia yang lebih high-context).
-- Wajib latency-masking (streaming response / acknowledgment cepat) — response time 4-9 detik akan terasa sangat lama sebagai silence di voice
-
-## FASE 8 — Deep Personality Polish
-
-- [ ] Perbaiki kesalahan fakta umum yang ditemukan (contoh: atribusi lagu/band)
-- [ ] Tuning konsistensi follow-up response (natural vs bare fact)
-- [ ] Testing ekstensif berbagai skenario (santai, diskusi serius, curhat emosional)
-
-## FASE 9 — Voice Input (full voice)
-
-- faster-whisper (STT) + VAD
-
-## FASE 10 — Visual Character Live2D (Laptop) + Proactive Loop Dasar
-
-- Pipeline `see-through` (layer decomposition dari 1 gambar) + `Anime2.5DRig` (auto-rigging, browser-based)
-- Physics interaction (drag, throw, idle movement), tool `switch_presence_mode`
-- Scheduler sederhana (SQL query ke `activity_log`/`chat_history`) → `trigger_reason` → AI inisiatif ngobrol duluan
-- Interruption budget + quiet hours (referensi: OpenWatari)
-- Journal log khusus pesan proaktif (`is_proactive` flag)
-- `OLLAMA_KEEP_ALIVE=-1` untuk mode always-on
-
-## FASE 11 — Native Android App
-
-- Chibi/sprite version dulu, Live2D Cubism SDK Android belakangan
-- Integrasi OPPO Band (OHealth → Android Health Connect API: sleep, heart rate, steps)
-
-## FASE 12 — Ekosistem Lanjutan
-
-- Server API, IoT sensors, home server migration, LINE bot (Messaging API resmi)
+**FASE 12 — Ekosistem Lanjutan**
+- Server API, IoT, home server, LINE bot
 
 ---
 
 ## PARKING LOT
 
-### Kelompok A — Prasyarat Fase 10/11
-- Vision: webcam presence detection, CCTV 360° RTSP integration
-- Ambient awareness penuh, curfew system (progressive lock + screenshot verification)
-- Confirmation-gate-enforced-in-code (referensi: OpenWatari) — untuk aksi invasif (force lock, dll), bukan cuma diatur via prompt
-- Knowledge Base RAG (`nomic-embed-text` + ChromaDB) — untuk dokumen/catatan personal
-- **[Prioritas naik]** Upgrade `memories` ke embedding-based semantic search — satu paket teknologi dengan Knowledge Base RAG, menyelesaikan gap semantik 1-bahasa DAN gap bilingual sekaligus
-- IoT sensor integration (home server)
+**Kelompok A — Prasyarat Fase 10/11**
+- Vision, curfew system, confirmation-gate-enforced-in-code (referensi OpenWatari)
+- Knowledge Base RAG + **upgrade `memories` ke embedding search** (prioritas naik — menyelesaikan gap semantik 1-bahasa DAN bilingual)
+- IoT sensor integration
 
-### Kelompok B — Opsional/Pelengkap
-- LINE bot (Messaging API resmi, bukan otomasi akun personal), email personal AI
-- Engineering mode, career support mode
+**Kelompok B — Opsional**: LINE bot, email AI, engineering/career mode
 
-### Kelompok C — Eksperimen Terpisah
-- RL/contextual bandit untuk mood — final decision: state-tracking, bukan RL
-- Server API multi-device
+**Kelompok C — Eksperimen Terpisah**: RL untuk mood (ditolak, final: state-tracking), server API multi-device
 
-### Kelompok D — Multi-Agent Era (butuh hardware ~32B+)
-- Agent Analis asynchronous (interval 2-3 jam) → tabel `pattern_reports`
-- Companion agent baca laporan sebagai enhancement kualitas inisiatif (bukan syarat)
-- Reversible-only git untuk self-improvement (referensi: OpenWatari — no reset/force-push/rebase, revert selalu commit baru)
-- Upgrade model companion utama seiring hardware upgrade
+**Kelompok D — Multi-Agent Era** (~32B+): Agent Analis asynchronous, reversible-only git, upgrade model utama
 
-### Kelompok E — Catatan Desain (referensi, bukan fase)
-- L2 Journal & L4 Hot-cache (referensi: OpenWatari 6-layer memory) — dipetakan ke Fase 10
-- Eksplainability advantage Anima (1 model spesifik vs framework generik) — pertahankan
-- TTFT (Time To First Token) sebagai metrik krusial voice — pantau ketat di Fase 7-9
-
+**Kelompok E — Catatan Desain**: L2/L4 memory (OpenWatari), eksplainability advantage, TTFT metrik krusial voice
 ---
 
 ## Keputusan Arsitektur Kunci (jangan diubah tanpa alasan kuat)

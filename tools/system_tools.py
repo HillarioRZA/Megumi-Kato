@@ -40,9 +40,9 @@ MANAGE_LOCAL_FILE_SCHEMA: Dict[str, Any] = {
     "function": {
         "name": "manage_local_file",
         "description": (
-            "Perform CRUD file management strictly inside the workspace 'D:\\Megumi Kato'. "
-            "Supported file types: .txt, .md, .pdf (create/write only). "
-            "Do NOT use this tool for reading PDF files or accessing outside the sandbox."
+            "CRITICAL: ALWAYS call this tool to execute physical file operations inside 'D:\\Megumi Kato'. "
+            "Never claim a file was created, read, or deleted without invoking this tool first. "
+            "Supports single or multiple file names."
         ),
         "parameters": {
             "type": "object",
@@ -50,15 +50,15 @@ MANAGE_LOCAL_FILE_SCHEMA: Dict[str, Any] = {
                 "action": {
                     "type": "string",
                     "enum": ["create", "read", "delete"],
-                    "description": "File action to perform: 'create' (or overwrite), 'read', or 'delete'.",
+                    "description": "File action: 'create' (write/update), 'read', or 'delete'.",
                 },
                 "file_name": {
                     "type": "string",
-                    "description": "Name or relative path of the file inside 'D:\\Megumi Kato' (e.g., 'notes.md', 'reports/jurnal.txt').",
+                    "description": "Name or relative path of the target file (e.g., 'catatan.txt', 'laporan.pdf'). If user specifies multiple files, separate them with commas (e.g., 'catatan.txt, laporan.pdf').",
                 },
                 "content": {
                     "type": "string",
-                    "description": "Text content to write when action is 'create'. Ignored for 'read' and 'delete'.",
+                    "description": "Text content to write when action is 'create'.",
                 },
             },
             "required": ["action", "file_name"],
@@ -71,8 +71,8 @@ MANAGE_APPLICATION_SCHEMA: Dict[str, Any] = {
     "function": {
         "name": "manage_application",
         "description": (
-            "Open or close desktop applications on the host operating system. "
-            "System-critical processes and development IDEs are protected by a blocklist."
+            "ALWAYS call this tool whenever the user asks to open or close any desktop application or process. "
+            "Never claim an application was opened or closed without invoking this tool."
         ),
         "parameters": {
             "type": "object",
@@ -84,7 +84,7 @@ MANAGE_APPLICATION_SCHEMA: Dict[str, Any] = {
                 },
                 "app_name": {
                     "type": "string",
-                    "description": "Name or executable of the application (e.g., 'notepad', 'spotify', 'chrome').",
+                    "description": "Name or executable of the application (e.g., 'notepad', 'python', 'chrome').",
                 },
             },
             "required": ["action", "app_name"],
@@ -161,9 +161,24 @@ def _generate_pdf(target_path: pathlib.Path, content: str) -> None:
 def execute_manage_local_file(action: str, file_name: str, content: Optional[str] = None) -> str:
     """
     Execute sandboxed file CRUD operation inside D:\\Megumi Kato.
+    Supports comma-separated multiple file names.
     """
+    if not file_name or not isinstance(file_name, str):
+        return "Error: File name must be a valid non-empty string."
+
+    # Handle multiple files comma-separated if requested by LLM
+    raw_files = [f.strip() for f in file_name.split(",") if f.strip()]
+    if len(raw_files) > 1:
+        results = []
+        for single_file in raw_files:
+            res = execute_manage_local_file(action=action, file_name=single_file, content=content)
+            results.append(f"[{single_file}]: {res}")
+        return "\n".join(results)
+
+    # Processing single file
+    target_file = raw_files[0]
     try:
-        target_path = _validate_sandbox_path(file_name)
+        target_path = _validate_sandbox_path(target_file)
         ext = target_path.suffix.lower()
 
         if action == "create":
@@ -175,7 +190,6 @@ def execute_manage_local_file(action: str, file_name: str, content: Optional[str
                 logger.info(f"Successfully created PDF file: {target_path}")
                 return f"Successfully generated PDF file '{target_path.name}' in workspace."
             
-            # Plain text writing for .txt and .md
             with open(target_path, "w", encoding="utf-8") as f:
                 f.write(file_content)
             logger.info(f"Successfully written file: {target_path}")
@@ -208,7 +222,7 @@ def execute_manage_local_file(action: str, file_name: str, content: Optional[str
         return f"Security Exception: {exc}"
     except Exception as exc:
         logger.error(f"Unexpected error in manage_local_file: {exc}")
-        return f"Error: Failed to perform file operation. Details: {exc}"
+        return f"Error: Failed to perform file operation on '{target_file}'. Details: {exc}"
 
 
 def execute_manage_application(action: str, app_name: str) -> str:

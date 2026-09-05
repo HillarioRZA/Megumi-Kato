@@ -15,12 +15,22 @@ from tools.memory_tools import (
 )
 from tools.time_tools import TIME_TOOLS, execute_get_current_time
 from tools.web_search_tools import WEB_SEARCH_TOOLS, execute_web_search
-
+from tools.weather_tools import WEATHER_TOOLS, execute_get_weather
+from tools.web_reader_tools import WEB_READER_TOOLS, execute_read_web_page
+from tools.system_tools import (
+    SYSTEM_TOOLS,
+    execute_manage_local_file,
+    execute_manage_application,
+    execute_get_system_status,
+)
 # All tool schemas combined, sent to Ollama's `tools` parameter
 ALL_TOOL_SCHEMAS: List[Dict[str, Any]] = [
     *MEMORY_TOOLS,
     *TIME_TOOLS,
     *WEB_SEARCH_TOOLS,
+    *WEATHER_TOOLS,
+    *WEB_READER_TOOLS,
+    *SYSTEM_TOOLS,
 ]
 
 # Tool name → execution handler mapping, used by ToolDispatcher
@@ -29,6 +39,11 @@ TOOL_HANDLER_MAP: Dict[str, Callable[..., str]] = {
     "recall_memory": execute_recall_memory,
     "verify_exact_system_clock": execute_get_current_time,
     "web_search": execute_web_search,
+    "get_weather": execute_get_weather,
+    "read_web_page": execute_read_web_page,
+    "manage_local_file": execute_manage_local_file,
+    "manage_application": execute_manage_application,
+    "get_system_status": execute_get_system_status,
 }
 
 # Tools that require memory_manager to be injected by the dispatcher

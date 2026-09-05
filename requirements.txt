@@ -2,3 +2,7 @@ httpx>=0.27.0
 python-dotenv>=1.0.0
 pyyaml>=6.0
 duckduckgo_search
+psutil
+beautifulsoup4
+requests
+fpdf2

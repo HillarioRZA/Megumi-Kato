@@ -23,6 +23,11 @@ from tools.system_tools import (
     execute_manage_application,
     execute_get_system_status,
 )
+from tools.inspection_tools import (
+    INSPECTION_TOOLS,
+    execute_scan_workspace,
+    execute_list_running_applications,
+)
 # All tool schemas combined, sent to Ollama's `tools` parameter
 ALL_TOOL_SCHEMAS: List[Dict[str, Any]] = [
     *MEMORY_TOOLS,
@@ -31,6 +36,7 @@ ALL_TOOL_SCHEMAS: List[Dict[str, Any]] = [
     *WEATHER_TOOLS,
     *WEB_READER_TOOLS,
     *SYSTEM_TOOLS,
+    *INSPECTION_TOOLS,
 ]
 
 # Tool name → execution handler mapping, used by ToolDispatcher
@@ -44,7 +50,10 @@ TOOL_HANDLER_MAP: Dict[str, Callable[..., str]] = {
     "manage_local_file": execute_manage_local_file,
     "manage_application": execute_manage_application,
     "get_system_status": execute_get_system_status,
+    "scan_workspace": execute_scan_workspace,
+    "list_running_applications": execute_list_running_applications,
 }
+
 
 # Tools that require memory_manager to be injected by the dispatcher
 MEMORY_DEPENDENT_TOOLS: frozenset = frozenset({"save_memory", "recall_memory"})

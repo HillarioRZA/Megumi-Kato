@@ -23,6 +23,8 @@ from core.tool_dispatcher import ToolDispatcher
 from personality.personality_builder import PersonalityBuilder
 from memory.manager import MemoryManager
 from core.time_cache import TimeCache
+from core.command import CommandHandler
+from memory.mood_manager import MoodManager
 
 
 def main() -> None:
@@ -38,7 +40,8 @@ def main() -> None:
     # Initialize client, memory manager, personality builder, tool dispatcher, and orchestrator
     llm_client = OllamaClient(config=config)
     memory_manager = MemoryManager(db_path=config.db_path)
-    tool_dispatcher = ToolDispatcher(memory_manager=memory_manager)
+    mood_manager = MoodManager(db_path=config.db_path)
+    tool_dispatcher = ToolDispatcher(memory_manager=memory_manager, mood_manager=mood_manager)
     personality_builder = PersonalityBuilder(
         char_file_path="personality/base_character.yaml",
         few_shot_file_path="personality/few_shot_examples.yaml",
@@ -48,11 +51,14 @@ def main() -> None:
         llm_client=llm_client,
         personality_builder=personality_builder,
         memory_manager=memory_manager,
+        mood_manager=mood_manager,
         time_cache=time_cache,
         tool_dispatcher=tool_dispatcher,
         config=config,
     )
 
+    # Initialize Command Handler
+    command_handler = CommandHandler(orchestrator=orchestrator)
     restored_msgs = len(orchestrator.history)
 
     print("=" * 60)
@@ -94,14 +100,13 @@ def main() -> None:
             if not user_input:
                 continue
 
-            # Command handling
-            if user_input.lower() in ("exit", "quit", "q"):
-                print("\nMematikan Project Anima CLI. Sampai jumpa!")
-                break
-
-            if user_input.lower() == "/clear":
-                orchestrator.clear_history()
-                print("[+] History percakapan telah dibersihkan.\n")
+            # Route input to CommandHandler
+            is_cmd, should_exit, cmd_output = command_handler.handle(user_input)
+            if is_cmd:
+                if cmd_output:
+                    print(f"\n{cmd_output}\n")
+                if should_exit:
+                    break
                 continue
 
             print("[*] Processing message...")

@@ -12,8 +12,9 @@ no memory management, and no conversation orchestration.
 import logging
 from typing import Any, Dict, List, Optional
 
-from tools.registry import TOOL_HANDLER_MAP, MEMORY_DEPENDENT_TOOLS
+from tools.registry import TOOL_HANDLER_MAP, MEMORY_DEPENDENT_TOOLS, MOOD_DEPENDENT_TOOLS
 from memory.manager import MemoryManager
+from memory.mood_manager import MoodManager
 
 logger = logging.getLogger("anima.tool_dispatcher")
 
@@ -30,7 +31,7 @@ class ToolDispatcher:
             passed to memory-related tool handlers that require it.
     """
 
-    def __init__(self, memory_manager: Optional[MemoryManager] = None) -> None:
+    def __init__(self, memory_manager: Optional[MemoryManager], mood_manager: Optional[MoodManager]) -> None:
         """
         Initialize ToolDispatcher.
 
@@ -39,6 +40,7 @@ class ToolDispatcher:
                 required by save_memory and recall_memory tool handlers.
         """
         self.memory_manager = memory_manager
+        self.mood_manager = mood_manager
         logger.debug(f"ToolDispatcher initialized [Memory enabled: {memory_manager is not None}]")
 
     def dispatch(self, tool_name: str, arguments: Dict[str, Any]) -> str:
@@ -68,6 +70,11 @@ class ToolDispatcher:
                     logger.error(f"Tool '{tool_name}' requires MemoryManager but none was injected.")
                     return f"Error: memory is not available — cannot execute '{tool_name}'."
                 result = handler(memory_manager=self.memory_manager, **arguments)
+            elif tool_name in MOOD_DEPENDENT_TOOLS:
+                if self.mood_manager is None:
+                    logger.error(f"Tool '{tool_name}' requires MoodManager but none was injected.")
+                    return f"Error: mood is not available — cannot execute '{tool_name}'."
+                result = handler(mood_manager=self.mood_manager, **arguments)   
             else:
                 result = handler(**arguments)
 

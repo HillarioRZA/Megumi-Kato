@@ -28,6 +28,7 @@ from tools.inspection_tools import (
     execute_scan_workspace,
     execute_list_running_applications,
 )
+from tools.mood_tools import MOOD_TOOLS, execute_adjust_mood
 # All tool schemas combined, sent to Ollama's `tools` parameter
 ALL_TOOL_SCHEMAS: List[Dict[str, Any]] = [
     *MEMORY_TOOLS,
@@ -37,6 +38,7 @@ ALL_TOOL_SCHEMAS: List[Dict[str, Any]] = [
     *WEB_READER_TOOLS,
     *SYSTEM_TOOLS,
     *INSPECTION_TOOLS,
+    *MOOD_TOOLS,
 ]
 
 # Tool name → execution handler mapping, used by ToolDispatcher
@@ -52,8 +54,12 @@ TOOL_HANDLER_MAP: Dict[str, Callable[..., str]] = {
     "get_system_status": execute_get_system_status,
     "scan_workspace": execute_scan_workspace,
     "list_running_applications": execute_list_running_applications,
+    "adjust_mood": execute_adjust_mood,
 }
 
 
 # Tools that require memory_manager to be injected by the dispatcher
 MEMORY_DEPENDENT_TOOLS: frozenset = frozenset({"save_memory", "recall_memory"})
+
+# Tools that require MoodManager dependency injection
+MOOD_DEPENDENT_TOOLS: frozenset = frozenset({"adjust_mood"})

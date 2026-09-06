@@ -178,6 +178,7 @@ def clear_all_data(db_path: str) -> bool:
         cursor.execute("DELETE FROM memories")
         cursor.execute("DELETE FROM activity_log")
         cursor.execute("DELETE FROM chat_history")
+        cursor.execute("DELETE FROM mood_log")
         cursor.close()
 
     logger.info(f"Cleared ALL data (memories, activity_log, chat_history) from {db_path}.")
@@ -351,3 +352,97 @@ def clear_chat_history(
 
     logger.info(f"Cleared chat history from {db_path} (Session: {session_id or 'ALL'}).")
     return True
+
+# -----------------------------------------------------------------------------
+# Mood Log Operations
+# -----------------------------------------------------------------------------
+
+def insert_mood_event(db_path: str, score: int, delta: int, event_type: str) -> int:
+    """
+    Insert a new mood change event into mood_log table.
+
+    Args:
+        db_path (str): Path to SQLite database file.
+        score (int): Updated mood score after applying delta.
+        delta (int): The score change value.
+        event_type (str): Type of trigger event.
+
+    Returns:
+        int: The inserted row ID, or -1 if execution failed.
+    """
+    query = """
+    INSERT INTO mood_log (score, delta, event_type)
+    VALUES (?, ?, ?);
+    """
+    try:
+        with get_connection(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (score, delta, event_type))
+            row_id = cursor.lastrowid or -1
+            cursor.close()
+            return row_id
+    except Exception as exc:
+        logger.error(f"Failed to insert mood event into database: {exc}")
+        return -1
+
+
+def get_latest_mood_entry(db_path: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieve the most recent entry from mood_log table.
+
+    Args:
+        db_path (str): Path to SQLite database file.
+
+    Returns:
+        Optional[Dict[str, Any]]: Dictionary containing score, delta, event_type,
+        and timestamp, or None if table is empty or error occurs.
+    """
+    query = """
+    SELECT score, delta, event_type, timestamp
+    FROM mood_log
+    ORDER BY id DESC
+    LIMIT 1;
+    """
+    try:
+        with get_connection(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            row = cursor.fetchone()
+            cursor.close()
+            if row:
+                return dict(row)
+            return None
+    except Exception as exc:
+        logger.error(f"Failed to retrieve latest mood entry: {exc}")
+        return None
+
+
+def get_mood_history(db_path: str, limit: int = 50) -> List[Dict[str, Any]]:
+    """
+    Retrieve recent mood log entries for analysis and debugging.
+
+    Args:
+        db_path (str): Path to SQLite database file.
+        limit (int): Maximum number of records to return.
+
+    Returns:
+        List[Dict[str, Any]]: List of mood log records.
+    """
+    query = """
+    SELECT id, score, delta, event_type, timestamp
+    FROM mood_log
+    ORDER BY id DESC
+    LIMIT ?;
+    """
+    results: List[Dict[str, Any]] = []
+    try:
+        with get_connection(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (limit,))
+            for row in cursor.fetchall():
+                results.append(dict(row))
+            cursor.close()
+            return results
+    except Exception as exc:
+        logger.error(f"Failed to retrieve mood history: {exc}")
+        return []

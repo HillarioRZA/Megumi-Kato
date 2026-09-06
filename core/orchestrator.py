@@ -16,6 +16,7 @@ from memory.manager import MemoryManager
 from personality.personality_builder import PersonalityBuilder
 from tools.registry import ALL_TOOL_SCHEMAS
 from core.time_cache import TimeCache
+from memory.mood_manager import MoodManager
 
 logger = logging.getLogger("anima.orchestrator")
 
@@ -36,6 +37,7 @@ class Orchestrator:
         llm_client: OllamaClient,
         personality_builder: Optional[PersonalityBuilder] = None,
         memory_manager: Optional[MemoryManager] = None,
+        mood_manager: Optional["MoodManager"] = None,
         tool_dispatcher: Optional[ToolDispatcher] = None,
         time_cache: Optional[TimeCache] = None,
         config: Optional[Config] = None,
@@ -53,6 +55,7 @@ class Orchestrator:
         self.llm_client = llm_client
         self.personality_builder = personality_builder
         self.memory_manager = memory_manager
+        self.mood_manager = mood_manager
         self.time_cache = time_cache
         self.tool_dispatcher = tool_dispatcher
         self.config = config or get_config()
@@ -132,6 +135,13 @@ class Orchestrator:
                 "Answer general time questions directly without calling any tools."
                 ),
             })
+        
+        # Inject ambient mood context (Phase 6)
+        if self.mood_manager:
+            mood_prompt = self.mood_manager.get_mood_context_prompt()
+            if mood_prompt:
+                messages.append({"role": "system", "content": mood_prompt})
+                
         # 4. Prepend few-shot turns as real conversation turns
         if self.personality_builder:
             few_shot_messages = self.personality_builder.get_few_shot_messages()
@@ -230,3 +240,12 @@ class Orchestrator:
         if clear_persistent_db and self.memory_manager:
             self.memory_manager.clear_chat()
         logger.info("Cleared orchestrator conversation history.")
+    
+    def reset_database(self) -> None:
+        """
+        Reset Database.
+        """
+        if self.memory_manager:
+            self.memory_manager.reset_all()
+        logger.info("Cleared database.")
+        

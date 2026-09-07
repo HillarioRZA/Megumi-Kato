@@ -124,12 +124,34 @@ Currently on **Fase 6** (Mood/Love Meter System — implementation done, testing
 
 ## PARKING LOT
 
-- **Kelompok A**: curfew system, confirmation-gate-enforced-in-code, Knowledge Base RAG + upgrade `memories` ke embedding search, IoT sensor
-- **Kelompok B**: LINE bot, email AI, engineering/career mode
-- **Kelompok C**: RL untuk mood (ditolak), server API multi-device
-- **Kelompok D**: Agent Analis asynchronous (~32B+), reversible-only git
-- **Kelompok E**: L2/L4 memory (OpenWatari), eksplainability advantage, TTFT metrik
-- **Kelompok F**: Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
+### Kelompok A — Prasyarat Fase 10/11
+- Vision: webcam presence detection, CCTV 360° RTSP integration
+- Ambient awareness penuh, curfew system (progressive lock + screenshot verification)
+- Confirmation-gate-enforced-in-code (referensi: OpenWatari) — untuk aksi invasif (force lock, dll), bukan cuma diatur via prompt
+- Knowledge Base RAG (`nomic-embed-text` + ChromaDB) — untuk dokumen/catatan personal
+- **[Prioritas naik]** Upgrade `memories` ke embedding-based semantic search — satu paket teknologi dengan Knowledge Base RAG, menyelesaikan gap semantik 1-bahasa DAN gap bilingual sekaligus
+- IoT sensor integration (home server)
+
+### Kelompok B — Opsional/Pelengkap
+- LINE bot (Messaging API resmi, bukan otomasi akun personal), email personal AI
+- Engineering mode, career support mode
+
+### Kelompok C — Eksperimen Terpisah
+- RL/contextual bandit untuk mood — final decision: state-tracking, bukan RL
+- Server API multi-device
+
+### Kelompok D — Multi-Agent Era (butuh hardware ~32B+)
+- Agent Analis asynchronous (interval 2-3 jam) → tabel `pattern_reports`
+- Companion agent baca laporan sebagai enhancement kualitas inisiatif (bukan syarat)
+- Reversible-only git untuk self-improvement (referensi: OpenWatari — no reset/force-push/rebase, revert selalu commit baru)
+- Upgrade model companion utama seiring hardware upgrade
+
+### Kelompok E — Catatan Desain (referensi, bukan fase)
+- L2 Journal & L4 Hot-cache (referensi: OpenWatari 6-layer memory) — dipetakan ke Fase 10
+- Eksplainability advantage Anima (1 model spesifik vs framework generik) — pertahankan
+- TTFT (Time To First Token) sebagai metrik krusial voice — pantau ketat di Fase 7-9
+
+###**Kelompok F**: Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
 
 ---
 

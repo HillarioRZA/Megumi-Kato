@@ -90,9 +90,19 @@ class PersonalityBuilder:
         emotional_depth = str(self.char_data.get("emotional_depth", "")).strip()
         mood_behavior = str(self.char_data.get("mood_behavior", "")).strip()
 
-        def fmt_list(items: List[str]) -> str:
-            return "\n".join(f"- {i}" for i in items)
-
+        def fmt_list(items: Any) -> str:
+            # Jika tidak sengaja terbaca sebagai string, ubah jadi list per baris
+            if isinstance(items, str):
+                logger.warning(
+                    f"Expected list but got str for a personality field — "
+                    f"check YAML syntax (likely '>' or '|' used where a list "
+                    f"was intended). Auto-recovering, but please fix the YAML."
+                )
+                items = [line.strip("- ").strip() for line in items.split("\n") if line.strip()]
+            elif not isinstance(items, list):
+                return ""
+            return "\n".join(f"- {i}" for i in items if i)
+    
         core_prompt = (
             f"You are {name}, a local AI companion.\n"
             f"User's name: {user_name}.\n\n"

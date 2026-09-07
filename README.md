@@ -151,7 +151,8 @@ Currently on **Fase 6** (Mood/Love Meter System — implementation done, testing
 - Eksplainability advantage Anima (1 model spesifik vs framework generik) — pertahankan
 - TTFT (Time To First Token) sebagai metrik krusial voice — pantau ketat di Fase 7-9
 
-### Kelompok F: Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
+### Kelompok F: 
+- Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
 
 ---
 

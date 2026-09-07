@@ -124,12 +124,12 @@ Currently on **Fase 6** (Mood/Love Meter System — implementation done, testing
 
 ## PARKING LOT
 
-**Kelompok A**: curfew system, confirmation-gate-enforced-in-code, Knowledge Base RAG + upgrade `memories` ke embedding search, IoT sensor
-**Kelompok B**: LINE bot, email AI, engineering/career mode
-**Kelompok C**: RL untuk mood (ditolak), server API multi-device
-**Kelompok D**: Agent Analis asynchronous (~32B+), reversible-only git
-**Kelompok E**: L2/L4 memory (OpenWatari), eksplainability advantage, TTFT metrik
-**Kelompok F**: Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
+- **Kelompok A**: curfew system, confirmation-gate-enforced-in-code, Knowledge Base RAG + upgrade `memories` ke embedding search, IoT sensor
+- **Kelompok B**: LINE bot, email AI, engineering/career mode
+- **Kelompok C**: RL untuk mood (ditolak), server API multi-device
+- **Kelompok D**: Agent Analis asynchronous (~32B+), reversible-only git
+- **Kelompok E**: L2/L4 memory (OpenWatari), eksplainability advantage, TTFT metrik
+- **Kelompok F**: Psychological layer tambahan (axis `relationship`, dll) — modul independen, bukan sistem emosi kompleks dari awal
 
 ---
 
